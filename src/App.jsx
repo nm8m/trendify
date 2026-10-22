@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import * as Spinners from "react-spinners";
 import "./App.css";
+import ProductCard from "./components/ProductCard";
 
 function App() {
     const [products, setProducts] = useState([]);
@@ -35,17 +36,26 @@ function App() {
                 </div>
             </nav>
             <main>
-                {loading ? <p>Loading...</p> : <h1>Batee5</h1>}
-                  <Spinners.BarLoader
-                      color="#f43f5e" 
-                      height={5}
-                      width={145}
-                      speedMultiplier={0.25}
+                {products.map((product) => (
+                    <ProductCard
+                        key={product.id}
+                        title={product.title}
+                        price={product.price}
+                        thumbnail={product.thumbnail}
+                        rating={product.rating}
+                    />
+                ))}
+
+                {loading ? <p>Loading...</p> : <h1>More Products Are Coming Soon!</h1>}
+                <Spinners.BarLoader
+                    color="#3c34ae"
+                    height={5}
+                    width={1210}
+                    speedMultiplier={0.25}
                 />
             </main>
         </>
     );
 }
-
 
 export default App;
