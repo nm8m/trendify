@@ -26,7 +26,11 @@ body {
 
 /* Store header */
 nav {
-    background: linear-gradient(120deg, var(--color-brand-dark), var(--color-brand));
+    background: linear-gradient(
+        120deg,
+        var(--color-brand-dark),
+        var(--color-brand)
+    );
     color: var(--color-surface);
     padding: 22px 24px;
 }
@@ -74,7 +78,9 @@ nav {
     font-size: 0.9rem;
     font-weight: 600;
     padding: 9px 17px;
-    transition: background-color 160ms ease, transform 160ms ease;
+    transition:
+        background-color 160ms ease,
+        transform 160ms ease;
 }
 
 .sign-in:hover {
@@ -103,7 +109,9 @@ main,
     box-shadow: var(--shadow-card);
     padding: 18px;
     text-align: left;
-    transition: box-shadow 180ms ease, transform 180ms ease;
+    transition:
+        box-shadow 180ms ease,
+        transform 180ms ease;
 }
 
 .product-card:hover {
@@ -233,4 +241,30 @@ main > div:last-child {
         scroll-behavior: auto !important;
         transition-duration: 0.01ms !important;
     }
+}
+
+form.search-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+}
+form button {
+    background-color: aqua;
+    color: var(--color-surface);
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+form button:hover {
+    background-color: #00d4d4;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 255, 255, 0.4);
+}
+form input {
+    padding: 6px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
 }
