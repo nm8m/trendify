@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import * as Spinners from "react-spinners";
 import "./App.css";
+import { FaArrowLeft } from "react-icons/fa";
 import ProductCard from "./components/ProductCard";
 
 function App() {
@@ -8,8 +9,20 @@ function App() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // 💡 Hint:
+    const [searchQuery, setSearchQuery] = useState(""); // للحروف المكتوبة
+    const [submitQuery, setSubmitQuery] = useState(""); // للكلمة النهائية
+    function handleSubmit(e) {
+        e.preventDefault();
+        setSubmitQuery(searchQuery);
+    }
+    function handleBack() {
+        setSearchQuery("");
+        setSubmitQuery("");
+    }
+
     useEffect(() => {
-        fetch("https://dummyjson.com/products")
+        fetch(`https://dummyjson.com/products/search?q=${submitQuery}`)
             .then((response) => {
                 if (!response.ok) {
                     throw new Error("Error fetching products");
@@ -28,18 +41,25 @@ function App() {
                 );
                 setLoading(false);
             });
-    }, []);
+    }, [submitQuery]);
     return (
         <>
             <nav>
+
+                    <button onClick={handleBack}>
+                        <FaArrowLeft />
+                    </button>
                 <div className="container">
                     <div className="logo">
                         <h3>Trendify</h3>
-                        <form className="search-form">
-                            <input type="text" placeholder="Search products..." />
-                            <button type="submit">
-                                Search
-                            </button>
+                        <form onSubmit={handleSubmit} className="search-form">
+                            <input
+                                type="text"
+                                placeholder="Search products..."
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                value={searchQuery}
+                            />
+                            <button type="submit">Search</button>
                         </form>
                         <button className="sign-in">Get Started</button>
                     </div>
@@ -68,7 +88,6 @@ function App() {
                     </>
                 )}
                 {error && <p>Error: {error} </p>}
-                
             </main>
         </>
     );
