@@ -42,7 +42,7 @@ function ProductCard({
         <article className="product-card">
             <div className="product-media">
                 <img src={thumbnail} alt={title} loading="lazy" />
-                {discount >= 5 && <span className="badge">-{discount}%</span>}
+                {discountRate >= 5 && <span className="badge">-{discount}%</span>}
             </div>
             <p className="product-meta">{brand || category}</p>
             <h3 title={title}>{title}</h3>
