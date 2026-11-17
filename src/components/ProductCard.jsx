@@ -34,8 +34,9 @@ function ProductCard({
     inCart,
     onAddToCart,
 }) {
-    const discount = Math.round(discountPercentage ?? 0);
-    const originalPrice = discount > 0 ? price / (1 - discount / 100) : null;
+    const discountRate = discountPercentage ?? 0;
+    const discount = Math.round(discountRate);
+    const originalPrice = discountRate > 0 ? price / (1 - discountRate / 100) : null;
 
     return (
         <article className="product-card">
