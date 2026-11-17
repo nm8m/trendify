@@ -1,28 +1,37 @@
 import { useState, useEffect } from "react";
-import * as Spinners from "react-spinners";
 import "./App.css";
-import { FaArrowLeft } from "react-icons/fa";
-import ProductCard from "./components/ProductCard";
+import { FaArrowLeft, FaSearch, FaShoppingBag } from "react-icons/fa";
+import ProductCard, { ProductCardSkeleton } from "./components/ProductCard";
 
 function App() {
-    const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [result, setResult] = useState({ query: null, products: [], error: null });
+    const [cart, setCart] = useState(() => new Set());
 
-    // 💡 Hint:
     const [searchQuery, setSearchQuery] = useState(""); // للحروف المكتوبة
     const [submitQuery, setSubmitQuery] = useState(""); // للكلمة النهائية
     function handleSubmit(e) {
         e.preventDefault();
-        setSubmitQuery(searchQuery);
+        setSubmitQuery(searchQuery.trim());
     }
     function handleBack() {
         setSearchQuery("");
         setSubmitQuery("");
     }
+    function toggleCart(id) {
+        setCart((prev) => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
+    }
 
     useEffect(() => {
-        fetch(`https://dummyjson.com/products/search?q=${submitQuery}`)
+        const controller = new AbortController();
+        fetch(
+            `https://dummyjson.com/products/search?q=${encodeURIComponent(submitQuery)}`,
+            { signal: controller.signal },
+        )
             .then((response) => {
                 if (!response.ok) {
                     throw new Error("Error fetching products");
@@ -30,64 +39,112 @@ function App() {
                 return response.json();
             })
             .then((data) => {
-                setProducts(data.products);
-                setLoading(false);
+                setResult({ query: submitQuery, products: data.products, error: null });
             })
             .catch((err) => {
-                setError(
-                    err.message === "Failed to fetch"
-                        ? "Check your internet connection"
-                        : err.message,
-                );
-                setLoading(false);
+                if (err.name === "AbortError") return;
+                setResult({
+                    query: submitQuery,
+                    products: [],
+                    error:
+                        err.message === "Failed to fetch"
+                            ? "Check your internet connection"
+                            : err.message,
+                });
             });
+        return () => controller.abort();
     }, [submitQuery]);
+
+    const loading = result.query !== submitQuery;
+    const { products, error } = result;
+    const isSearching = submitQuery !== "";
+
     return (
         <>
             <nav>
-
-                    <button onClick={handleBack}>
-                        <FaArrowLeft />
-                    </button>
                 <div className="container">
                     <div className="logo">
-                        <h3>Trendify</h3>
-                        <form onSubmit={handleSubmit} className="search-form">
+                        <div className="brand">
+                            {isSearching && (
+                                <button
+                                    type="button"
+                                    className="back-button"
+                                    onClick={handleBack}
+                                    aria-label="Back to all products"
+                                >
+                                    <FaArrowLeft />
+                                </button>
+                            )}
+                            <h3>Trendify</h3>
+                        </div>
+                        <form onSubmit={handleSubmit} className="search-form" role="search">
+                            <FaSearch className="search-icon" aria-hidden="true" />
                             <input
-                                type="text"
+                                type="search"
                                 placeholder="Search products..."
+                                aria-label="Search products"
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 value={searchQuery}
                             />
                             <button type="submit">Search</button>
                         </form>
-                        <button className="sign-in">Get Started</button>
+                        <button
+                            type="button"
+                            className="cart-button"
+                            aria-label={`Cart, ${cart.size} items`}
+                        >
+                            <FaShoppingBag />
+                            <span>Cart</span>
+                            {cart.size > 0 && <span className="cart-count">{cart.size}</span>}
+                        </button>
                     </div>
                 </div>
             </nav>
-            <main>
-                {products.map((product) => (
-                    <ProductCard
-                        key={product.id}
-                        title={product.title}
-                        price={product.price}
-                        thumbnail={product.thumbnail}
-                        rating={product.rating}
-                    />
-                ))}
-
-                {loading && (
-                    <>
-                        <p>Loading...</p>
-                        <Spinners.BarLoader
-                            color="#3c34ae"
-                            height={5}
-                            width={1210}
-                            speedMultiplier={0.25}
-                        />
-                    </>
+            <section className="results-header">
+                <h1>{isSearching ? `Results for "${submitQuery}"` : "All products"}</h1>
+                {!loading && !error && (
+                    <p>
+                        {products.length} {products.length === 1 ? "item" : "items"}
+                    </p>
                 )}
-                {error && <p>Error: {error} </p>}
+            </section>
+            <main>
+                {loading &&
+                    Array.from({ length: 8 }, (_, i) => <ProductCardSkeleton key={i} />)}
+
+                {!loading &&
+                    !error &&
+                    products.map((product) => (
+                        <ProductCard
+                            key={product.id}
+                            title={product.title}
+                            price={product.price}
+                            thumbnail={product.thumbnail}
+                            rating={product.rating}
+                            brand={product.brand}
+                            category={product.category}
+                            discountPercentage={product.discountPercentage}
+                            inCart={cart.has(product.id)}
+                            onAddToCart={() => toggleCart(product.id)}
+                        />
+                    ))}
+
+                {!loading && !error && products.length === 0 && (
+                    <div className="empty-state">
+                        <h2>No products found</h2>
+                        <p>Nothing matches "{submitQuery}". Try another search.</p>
+                        <button type="button" onClick={handleBack}>
+                            Show all products
+                        </button>
+                    </div>
+                )}
+
+                {error && (
+                    <div className="empty-state">
+                        <h2>Something went wrong</h2>
+                        <p>{error}</p>
+                    </div>
+                )}
             </main>
         </>
     );
