@@ -323,7 +323,7 @@ main > h1,
     font-size: clamp(1.25rem, 3vw, 1.75rem);
 }
 
-main > div:last-child {
+main > div:last-child:not(.product-card) {
     width: 100% !important;
     grid-column: 1 / -1;
     justify-self: center;
